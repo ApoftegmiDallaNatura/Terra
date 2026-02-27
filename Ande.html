@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Ande</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .player-card {
+      background: #000;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .cover {
+      width: 260px;
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: #111;
+    }
+
+    .title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .artist {
+      font-size: 0.95rem;
+      color: #b3b3b3;
+      margin-bottom: 20px;
+    }
+
+    audio {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="player-card">
+    <img class="cover" id="cover" src="" alt="Cover">
+    <div class="title" id="title">Caricamento...</div>
+    <div class="artist" id="artist"></div>
+
+    <audio id="audio" controls preload="metadata">
+      <source src="Apoftegmi Dalla Natura - Ande.mp3" type="audio/mpeg">
+      Il tuo browser non supporta l'audio HTML5.
+    </audio>
+  </div>
+
+  <!-- Libreria per leggere ID3 -->
+  <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
+
+ <script>
+  const audio = document.getElementById("audio");
+  const title = document.getElementById("title");
+  const artist = document.getElementById("artist");
+  const cover = document.getElementById("cover");
+
+  audio.addEventListener("loadeddata", function () {
+    const url = audio.currentSrc;
+
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        jsmediatags.read(blob, {
+          onSuccess: function(tag) {
+            title.textContent = tag.tags.title || "Titolo sconosciuto";
+            artist.textContent = tag.tags.artist || "Artista sconosciuto";
+
+            if (tag.tags.picture) {
+              const { data, format } = tag.tags.picture;
+              let base64String = "";
+              for (let i = 0; i < data.length; i++) {
+                base64String += String.fromCharCode(data[i]);
+              }
+              cover.src = `data:${format};base64,${window.btoa(base64String)}`;
+            }
+          },
+          onError: function(error) {
+            console.log(error);
+            title.textContent = "Metadati non trovati";
+          }
+        });
+      });
+  });
+</script>
+
+</body>
+</html>
